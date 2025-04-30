@@ -20,11 +20,17 @@
   "homepage": "https://github.com/hubermanophir/applyst_server#readme",
   "description": "",
   "dependencies": {
+    "@prisma/client": "^6.7.0",
+    "cookie-parser": "^1.4.7",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.7.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.3",
     "@types/winston": "^2.4.4",
     "nodemon": "^3.1.10",

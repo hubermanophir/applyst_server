@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  password_hash String
+  jobs          Job[]
+}
+
+model Job {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  stage_id      Int
+  company_name  String
+  job_post_url  String
+  title         String
+  resume        String
+  date_submitted DateTime
+  contact       String?
+
+  user          User     @relation(fields: [user_id], references: [id])
+  stage         Stage    @relation(fields: [stage_id], references: [id])
+  notes         Note[]
+
+  @@index([user_id])
+  @@index([stage_id])
+}
+
+model Stage {
+  id       Int    @id @default(autoincrement())
+  name     String
+  position Int
+
+  jobs     Job[]
+
+  @@unique([name, position])
+}
+
+model Note {
+  id      Int    @id @default(autoincrement())
+  job_id  Int
+  content String
+
+  job     Job    @relation(fields: [job_id], references: [id])
+
+  @@index([job_id])
+}
