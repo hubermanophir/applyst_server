@@ -1,9 +1,13 @@
 import jwt from "jsonwebtoken";
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key"; // Use a secure secret key in production
+export enum ENUM_JWT_EXPIRE {
+  ACCESS = "1h",
+  REFRESH = "30d",
+}
 
-export const generateToken = (payload: object) => {
-  return jwt.sign(payload, SECRET_KEY);
+export const generateToken = (payload: object, expiresIn: ENUM_JWT_EXPIRE) => {
+  return jwt.sign(payload, SECRET_KEY, { expiresIn });
 };
 
 export const verifyToken = (token: string) => {
