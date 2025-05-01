@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key"; // Use a secure secret key in production
+const SECRET_KEY = process.env.JWT_SECRET || "secret";
 export enum ENUM_JWT_EXPIRE {
   ACCESS = "1h",
   REFRESH = "30d",
