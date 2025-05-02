@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwt.util";
+import { TokenType, verifyToken } from "../utils/jwt.util";
 
-export const authenticateJWT = (
+export const jwtMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -9,18 +9,20 @@ export const authenticateJWT = (
   const authHeader = req.headers["authorization"];
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res
+    res
       .status(401)
       .json({ message: "Authentication token is missing or malformed" });
+    return;
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
-    const { uid } = verifyToken<{ uid: number }>(token);
+    const { uid } = verifyToken<{ uid: number }>(token, TokenType.accessToken);
     (req as Request & { uid: number }).uid = uid;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid or expired token" });
+    res.status(401).json({ message: "Invalid or expired token" });
+    return;
   }
 };
