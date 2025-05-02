@@ -4,7 +4,7 @@ import prisma from "../services/prisma.service";
 import passwords from "../utils/passwords.util";
 import { ENUM_JWT_EXPIRE } from "../types/jwt.types";
 
-export const loginHandler = async (req: Request, res: Response, _: any) => {
+export const loginHandler = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     const user = await prisma.user.findFirst({ where: { username } });
@@ -13,12 +13,18 @@ export const loginHandler = async (req: Request, res: Response, _: any) => {
       res.status(401).json({ message: "Invalid username or password" });
       return;
     }
+
     const { id: uid } = user;
-    const [accessToken, refreshToken] = [
-      generateToken({ uid }, ENUM_JWT_EXPIRE.ACCESS),
-      generateToken({ uid }, ENUM_JWT_EXPIRE.REFRESH),
-    ];
-    res.status(204).json({ accessToken, refreshToken });
+    const accessToken = generateToken({ uid }, ENUM_JWT_EXPIRE.ACCESS);
+    const refreshToken = generateToken({ uid }, ENUM_JWT_EXPIRE.REFRESH);
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({ accessToken });
     return;
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -60,47 +66,37 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const getAccessToken = (req: Request, res: Response) => {
-  const authHeader = req.headers["authorization"];
+export const getAccessToken = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies["refreshToken"];
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ message: "Authentication token is missing or malformed" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  const { uid } = verifyToken<{ uid: number }>(token);
-
-  const newAccessToken = generateToken({ uid }, ENUM_JWT_EXPIRE.ACCESS);
-
-  return res.status(200).json({ accessToken: newAccessToken });
-};
-
-//TODO: implement logout using redis to save the refresh token
-export const logout = async (req: Request, res: Response) => {
-  try {
-    const authHeader = req.headers["authorization"];
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      res
-        .status(401)
-        .json({ message: "Authentication token is missing or malformed" });
-      return;
-    }
-
-    const token = authHeader.split(" ")[1];
-    const { uid } = verifyToken<{ uid: number }>(token);
-    const user = await prisma.user.findFirst({ where: { id: uid } });
-    if (!user) {
-      res.status(401).json({ message: "Invalid token" });
-      return;
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+  if (!refreshToken) {
+    res.status(401).json({ message: "Refresh token is missing" });
     return;
   }
-  res.status(204).json({ message: "Logged out successfully" });
+
+  try {
+    const { uid } = verifyToken<{ uid: number }>(refreshToken);
+    const user = await prisma.user.findUnique({ where: { id: uid } });
+    if (!user) {
+      res.status(401).json({ message: "Invalid refresh token" });
+      return;
+    }
+    const newAccessToken = generateToken({ uid }, ENUM_JWT_EXPIRE.ACCESS);
+
+    res.status(200).json({ accessToken: newAccessToken });
+    return;
+  } catch (error) {
+    res.status(401).json({ message: "Invalid or expired refresh token" });
+    return;
+  }
+};
+
+export const logout = (req: Request, res: Response) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  });
+  res.status(200).json({ message: "Logged out successfully" });
   return;
 };
