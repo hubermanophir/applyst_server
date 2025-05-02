@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import { ENUM_JWT_EXPIRE } from "../types/jwt.types";
-
+import dotenv from "dotenv";
+dotenv.config();
 const accessTokenSecret = process.env.TOKEN_SECRET || "default";
-const refreshTokenSecret = process.env.REFRESH || "default";
+const refreshTokenSecret = process.env.REFRESH_TOKEN || "default";
 
 export enum TokenType {
   accessToken = 0,
@@ -14,11 +15,9 @@ export const generateToken = (
   expiresIn: ENUM_JWT_EXPIRE,
   tokenSecret: TokenType
 ) => {
-  return jwt.sign(
-    payload,
-    tokenSecret ? refreshTokenSecret : accessTokenSecret,
-    { expiresIn }
-  );
+  const secret = tokenSecret ? refreshTokenSecret : accessTokenSecret;
+  console.log({ secret, tokenSecret });
+  return jwt.sign(payload, secret, { expiresIn });
 };
 
 export const verifyToken = <T>(token: string, tokenSecret: TokenType) => {

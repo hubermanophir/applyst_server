@@ -1,6 +1,5 @@
 import app from "./app";
 import prisma from "./services/prisma.service";
-
 const PORT = process.env.PORT || 4000;
 
 const startServer = async () => {

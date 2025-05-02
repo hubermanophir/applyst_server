@@ -15,16 +15,10 @@ export const loginHandler = async (req: Request, res: Response) => {
     }
 
     const { id: uid } = user;
-    const accessToken = generateToken(
-      { uid },
-      ENUM_JWT_EXPIRE.ACCESS,
-      TokenType.accessToken
-    );
-    const refreshToken = generateToken(
-      { uid },
-      ENUM_JWT_EXPIRE.REFRESH,
-      TokenType.refreshToken
-    );
+    const [accessToken, refreshToken] = [
+      generateToken({ uid }, ENUM_JWT_EXPIRE.ACCESS, TokenType.accessToken),
+      generateToken({ uid }, ENUM_JWT_EXPIRE.REFRESH, TokenType.refreshToken),
+    ];
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
@@ -59,6 +53,12 @@ export const register = async (req: Request, res: Response) => {
       generateToken({ uid }, ENUM_JWT_EXPIRE.ACCESS, TokenType.accessToken),
       generateToken({ uid }, ENUM_JWT_EXPIRE.REFRESH, TokenType.refreshToken),
     ];
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
     res.status(201).json({ accessToken, refreshToken });
     return;
   } catch (error) {
