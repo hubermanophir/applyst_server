@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import prisma from "../services/prisma.service";
+import JobsBL from "../models/jobs.bl";
 
 export const getJobs = async (
   req: Request & { uid?: number },
@@ -9,10 +9,18 @@ export const getJobs = async (
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
-  const jobs = await prisma.job.findMany({
-    where: { user_id: req.uid },
-    select: { id: true, title: true, company_name: true, date_submitted: true },
-  });
+  const jobs = await JobsBL.getInstance().getMany(
+    { user_id: req.uid },
+    {
+      select: {
+        company_name: true,
+        id: true,
+        title: true,
+        stage_id: true,
+        date_submitted: true,
+      },
+    }
+  );
   res.status(200).json({ jobs });
 };
 export const getJob = async (
@@ -28,10 +36,11 @@ export const getJob = async (
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
-  const job = await prisma.job.findUnique({
-    where: { id: Number(id), user_id: req.uid },
-    select: { id: true, title: true, company_name: true, date_submitted: true },
-  });
+  const job = await JobsBL.getInstance().getById(id, req.uid);
+  if (!job) {
+    res.status(404).json({ message: "Job not found" });
+    return;
+  }
   res.status(200).json({ job });
 };
 export const createJob = async (req: Request, res: Response) => {
@@ -47,6 +56,7 @@ export const createJob = async (req: Request, res: Response) => {
     stage_id,
     job_post_url,
     resume,
+    contact,
   } = req.body;
 
   const missingFields = getRequiredMissingFields(
@@ -61,18 +71,17 @@ export const createJob = async (req: Request, res: Response) => {
     });
     return;
   }
-
-  const job = await prisma.job.create({
-    data: {
-      title,
-      company_name,
-      date_submitted: new Date(date_submitted),
-      stage_id: Number(stage_id),
-      job_post_url,
-      resume,
-      user_id: uid,
-    },
+  const job = await JobsBL.getInstance().create({
+    title,
+    company_name,
+    date_submitted: new Date(date_submitted),
+    stage_id: Number(stage_id),
+    job_post_url,
+    resume: resume || null,
+    user_id: uid,
+    contact: contact || null,
   });
+
   if (!job) {
     res.status(500).json({ message: "Failed to create job" });
     return;
@@ -99,16 +108,13 @@ export const updateJob = async (req: Request, res: Response) => {
     resume,
   } = req.body;
 
-  const job = await prisma.job.update({
-    where: { id: Number(id), user_id: uid },
-    data: {
-      ...(title && { title }),
-      ...(company_name && { company_name }),
-      ...(date_submitted && { date_submitted: new Date(date_submitted) }),
-      ...(stage_id && { stage_id: Number(stage_id) }),
-      ...(job_post_url && { job_post_url }),
-      ...(resume && { resume }),
-    },
+  const job = await JobsBL.getInstance().update(id, {
+    title,
+    company_name,
+    date_submitted: new Date(date_submitted),
+    stage_id: Number(stage_id),
+    job_post_url,
+    resume,
   });
   if (!job) {
     res.status(500).json({ message: "Failed to update job" });
@@ -129,9 +135,7 @@ export const deleteJob = async (req: Request, res: Response) => {
     res.status(400).json({ message: "Job ID is required" });
     return;
   }
-  const job = await prisma.job.delete({
-    where: { id: Number(id), user_id: uid },
-  });
+  const job = await JobsBL.getInstance().delete(id, uid);
   if (!job) {
     res.status(500).json({ message: "Failed to delete job" });
     return;
