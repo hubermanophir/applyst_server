@@ -16,7 +16,6 @@ export const generateToken = (
   tokenSecret: TokenType
 ) => {
   const secret = tokenSecret ? refreshTokenSecret : accessTokenSecret;
-  console.log({ secret, tokenSecret });
   return jwt.sign(payload, secret, { expiresIn });
 };
 
