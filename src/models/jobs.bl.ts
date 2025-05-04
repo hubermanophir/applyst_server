@@ -1,5 +1,6 @@
 import { Job } from "@prisma/client";
 import prisma from "../services/prisma.service";
+import { Base } from "../types/base.bl";
 
 class JobsBL implements Base<Job> {
   static instance: JobsBL;

@@ -1,5 +1,6 @@
 import { User } from "@prisma/client";
 import prisma from "../services/prisma.service";
+import { Base } from "../types/base.bl";
 
 class UserBL implements Base<User> {
   static instance: UserBL;

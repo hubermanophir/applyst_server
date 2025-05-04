@@ -1,4 +1,4 @@
-abstract class Base<T> {
+export abstract class Base<T> {
   abstract getById(
     id: string,
     user_id?: number,

@@ -14,10 +14,11 @@ datasource db {
 }
 
 model User {
-  id            Int    @id @default(autoincrement())
-  username      String @unique
+  id            Int     @id @default(autoincrement())
+  username      String  @unique
   password_hash String
   jobs          Job[]
+  Stage         Stage[]
 }
 
 model Job {
@@ -43,10 +44,13 @@ model Stage {
   id       Int    @id @default(autoincrement())
   name     String
   position Int
+  user_id  Int
 
   jobs Job[]
+  user User  @relation(fields: [user_id], references: [id])
 
   @@unique([name, position])
+  @@index([user_id])
 }
 
 model Note {
