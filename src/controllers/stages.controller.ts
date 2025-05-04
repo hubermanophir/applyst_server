@@ -33,14 +33,14 @@ export const createStage = async (
     return;
   }
   const { name, position } = req.body;
-  console.log({ name, position });
-  if (!name || typeof position !== "number") {
+  const positionNumber = Number(position);
+  if (!name || isNaN(positionNumber)) {
     res.status(400).json({ message: "Name and position are required" });
     return;
   }
   const stage = await StagesBL.getInstance().create({
     name,
-    position,
+    position: positionNumber,
     user_id: uid,
   });
   res.status(201).json({ stage });
