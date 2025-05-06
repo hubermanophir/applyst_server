@@ -4,11 +4,10 @@ import loggerMiddleware from "./middlewares/loggerMiddleware";
 import apiRouter from "./api";
 import { jwtMiddleware } from "./middlewares/auth.middleware";
 import { notFoundHandler } from "./controllers/notFound";
-import cors from "cors";
+
 
 const app: Application = express();
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
