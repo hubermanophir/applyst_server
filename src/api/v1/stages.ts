@@ -2,14 +2,13 @@ import { Router } from "express";
 import {
   createInitialStages,
   createStage,
-  getStages,
+  getUserStagesWithJobs,
 } from "../../controllers/stages.controller";
 
 const stagesRouter = Router();
 
-stagesRouter.get("/", getStages);
+stagesRouter.get("/", getUserStagesWithJobs);
 stagesRouter.post("/", createStage);
 stagesRouter.post("/initial", createInitialStages);
-
 
 export default stagesRouter;
