@@ -90,6 +90,24 @@ class JobsBL implements Base<Job> {
     });
     return job;
   }
+
+  async getUserJobsWithStages(
+    user_id: number,
+    options?: {
+      take?: number;
+      skip?: number;
+      select?: Partial<Record<keyof Job, boolean>>;
+    }
+  ): Promise<Job[]> {
+    const jobs = await prisma.job.findMany({
+      where: { user_id },
+      include: {
+        stage: true,
+      },
+      ...options,
+    });
+    return jobs;
+  }
 }
 
 export default JobsBL;

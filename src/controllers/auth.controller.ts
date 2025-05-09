@@ -59,7 +59,7 @@ export const register = async (req: Request, res: Response) => {
       sameSite: "strict",
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
-    res.status(201).json({ accessToken, refreshToken });
+    res.status(201).json({ accessToken });
     return;
   } catch (error) {
     if (

@@ -45,7 +45,6 @@ export const getJob = async (
 };
 export const createJob = async (req: Request, res: Response) => {
   const { uid } = req as Request & { uid?: number };
-  console.log({ uid });
   if (!uid) {
     res.status(401).json({ message: "Unauthorized" });
     return;

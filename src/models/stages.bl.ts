@@ -63,6 +63,34 @@ class StagesBL implements Base<Stage> {
     });
     return stage;
   }
+
+  async getAllUserStagesWithJobs(
+    user_id: number,
+    options?: {
+      take?: number;
+      skip?: number;
+      select?: Partial<Record<keyof Stage, boolean>>;
+    }
+  ): Promise<Stage[]> {
+    const stages = await prisma.stage.findMany({
+      where: { user_id },
+      include: {
+        jobs: {
+          select: {
+            id: true,
+            title: true,
+            company_name: true,
+            date_submitted: true,
+            stage_id: true,
+            job_post_url: true,
+            resume: true,
+          },
+        },
+      },
+      ...options,
+    });
+    return stages;
+  }
 }
 
 export default StagesBL;
