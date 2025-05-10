@@ -75,24 +75,3 @@ export const createInitialStages = async (
 
   res.status(201).json({ stages: createdStages });
 };
-
-export const getUserStagesWithJobs = async (
-  req: Request & { uid?: number },
-  res: Response
-) => {
-  const { uid } = req as Request & { uid?: number };
-  if (!uid) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-  const stages = await StagesBL.getInstance().getAllUserStagesWithJobs(uid);
-  if (!stages) {
-    res.status(404).json({ message: "No stages found" });
-    return;
-  }
-  if (stages.length === 0) {
-    res.status(200).json({ stages: [] });
-    return;
-  }
-  res.status(200).json({ stages });
-};
